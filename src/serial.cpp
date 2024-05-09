@@ -1,7 +1,10 @@
 #include "includes.h"
 
-char line[2];
+void serial_init() {
+    Serial.begin(BAUDRATE);
+}
 
-void read_serial() {
-    char c;
+void show_error(int code) {
+    Serial.print("Error ");
+    Serial.println(code);
 }
