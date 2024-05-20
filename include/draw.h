@@ -7,8 +7,4 @@
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 240
 
-void update_ui();
-
-void draw_init();
-
 #endif

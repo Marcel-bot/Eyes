@@ -8,7 +8,5 @@
 // Error codes
 #define INVALID_COMMAND_ERROR 0
 
-void serial_init();
-void show_error(int code);
 
 #endif

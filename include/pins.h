@@ -9,6 +9,5 @@
 #define TFT_CS_1 21
 #define TFT_CS_2 22
 
-void pins_init();
 
 #endif
