@@ -1,13 +1,13 @@
 #ifndef PINS
 #define PINS
 
-#define TFT_MOSI 23
-#define TFT_SCLK 18
-#define TFT_DC 16
-#define TFT_RST 4
+#define TFT_MOSIa 23
+#define TFT_SCLKa 18
+#define TFT_DCa 16
+#define TFT_RSTa 4
 
-#define TFT_CS_1 21
-#define TFT_CS_2 22
+#define TFT_CS_LEFT 21
+#define TFT_CS_RIGHT 22
 
 
 #endif
