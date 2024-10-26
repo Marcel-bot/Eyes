@@ -7,6 +7,9 @@
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 240
 
+#define MARCEL_BLUE 13339
+
 void setup_render();
+void render();
 
 #endif
