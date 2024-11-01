@@ -10,6 +10,13 @@
 #define MARCEL_BLUE 13339
 
 void setup_render();
-void render();
+
+extern auto tft = TFT_eSPI();
+extern auto sprite = TFT_eSprite(&tft);
+extern auto eye = TFT_eSprite(&tft);
+
+struct Point {
+    float x, y;
+};
 
 #endif

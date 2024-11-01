@@ -7,5 +7,4 @@ void setup() {
 
 void loop() {
     handle_uart();
-    render();
 }
