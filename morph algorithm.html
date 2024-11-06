@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SVG Morph Animation</title>
+  <style>
+    svg {
+      border: 1px solid #333;
+      display: block;
+      margin: auto;
+      width: 500px;
+      height: 500px;
+    }
+    line {
+      stroke: #333;
+      stroke-width: 2;
+    }
+  </style>
+</head>
+<body>
+  <svg id="svg"></svg>
+
+  <script>
+    function between(a, b) {
+      return [(a[0] + a[1]) / 2, (b[0] + b[1])]
+    }
+
+    const endPoints = [[0, 0], [0, 0], [0, 0], [100, 0], [100, 0], [100, 20], [100, 20], [0, 20], [0, 20]];
+
+    const startPoints = [[97, 65], [82, 87], [58, 98], [31, 95], [10, 79], [0, 54], [5, 27], [24, 7], [49, 0]];
+
+    function distance(point1, point2) {
+      return Math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2);
+    }
+
+    function circularShiftPoints(points, shift) {
+      return points.slice(shift).concat(points.slice(0, shift));
+    }
+
+    function findOptimalShift(start, end) {
+      let minDistance = Infinity;
+      let bestShift = 0;
+      let reversed = false;
+
+      for (const points of [start, [...start].reverse()]) {
+        for (let shift = 0; shift < points.length; shift++) {
+          const shiftedPoints = circularShiftPoints(points, shift);
+          const totalDistance = shiftedPoints.reduce((sum, point, i) => sum + distance(point, end[i]), 0);
+          
+          if (totalDistance < minDistance) {
+            minDistance = totalDistance;
+            bestShift = shift;
+            reversed = points === start ? false : true;
+          }
+        }
+      }
+      
+      const bestPoints = reversed ? [...start].reverse() : start;
+      return circularShiftPoints(bestPoints, bestShift);
+    }
+
+    function equalizePoints(start, end) {
+      const diff = Math.abs(start.length - end.length);
+      if (diff === 0) return [start, end];
+      
+      const longer = start.length > end.length ? start : end;
+      const shorter = start.length > end.length ? end : start;
+
+      for (let i = 0; i < diff; i++) {
+        const [x1, y1] = longer[i % longer.length];
+        const [x2, y2] = longer[(i + 1) % longer.length];
+        shorter.push([(x1 + x2) / 2, (y1 + y2) / 2]);
+      }
+      return [start, end];
+    }
+
+    let [eqStartPoints, eqEndPoints] = equalizePoints(startPoints, endPoints);
+
+    eqStartPoints = findOptimalShift(eqStartPoints, eqEndPoints);
+
+    function drawShape(points) {
+      svg.innerHTML = '';
+      for (let i = 0; i < points.length; i++) {
+        const [x1, y1] = points[i];
+        const [x2, y2] = points[(i + 1) % points.length];
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        svg.appendChild(line);
+      }
+    }
+
+    function morphShapes(start, end, duration = 2000) {
+      const numFrames = 60;
+      const interval = duration / numFrames;
+      
+      let frame = 0;
+      const animate = () => {
+        if (frame > numFrames) return;
+        
+        const t = frame / numFrames;
+        const interpolatedPoints = start.map(([x0, y0], i) => {
+          const [x1, y1] = end[i];
+          return [
+            x0 + (x1 - x0) * t,
+            y0 + (y1 - y0) * t
+          ];
+        });
+
+        drawShape(interpolatedPoints);
+        frame++;
+        setTimeout(animate, interval);
+      };
+      
+      animate();
+    }
+
+    drawShape(eqStartPoints);
+
+    setTimeout(() => {
+      morphShapes(eqStartPoints, eqEndPoints, 3000);
+    }, 1000);
+  </script>
+</body>
+</html>
