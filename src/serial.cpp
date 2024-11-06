@@ -1,6 +1,6 @@
 #include "main.h"
 
-String buffer;
+String buffer = "";
 u_int8_t bufferIndex = 0;
 
 bool rendered_once = false;
@@ -34,9 +34,41 @@ void drawCubicBezier(const Point p0, const Point p1, const Point p2, const Point
     }
 }
 
+void drawDirectBezier(const Point p0, const Point p1, const Point p2, const Point p3, const uint16_t color) {
+    float prevX = p0.x;
+    float prevY = p0.y;
+
+    Serial.println("From");
+    Serial.println(p0.x);
+    Serial.println(p0.y);
+
+    Serial.println(p1.x);
+    Serial.println(p1.y);
+
+    Serial.println(p2.x);
+    Serial.println(p2.y);
+
+    Serial.println(p3.x);
+    Serial.println(p3.y);
+
+    Serial.println("To");
+    
+
+    for (float t = 0.0; t <= 1.0; t += 0.02) {
+        const float oneMinusT = 1 - t;
+
+        const float x = oneMinusT * oneMinusT * oneMinusT * p0.x + 3 * oneMinusT * oneMinusT * t * p1.x + 3 * oneMinusT * t * t * p2.x + t * t * t * p3.x;
+        const float y = oneMinusT * oneMinusT * oneMinusT * p0.y + 3 * oneMinusT * oneMinusT * t * p1.y + 3 * oneMinusT * t * t * p2.y + t * t * t * p3.y;
+
+        sprite.drawWideLine(prevX, prevY, x, y, 3, color);
+
+        prevX = x;
+        prevY = y;
+    }
+}
+
 void render_current(const int x, const int y) {
     sprite.fillScreen(TFT_BLACK);
-    sprite.pushToSprite(&eye, x, y);
 
     sprite.pushSprite(0, 0);
 }
@@ -60,15 +92,41 @@ void execute_move(float params[200], const int len) {
 }
 
 void execute_display(float params[200], const int len) {
+    digitalWrite(TFT_CS_LEFT, LOW);
+    digitalWrite(TFT_CS_RIGHT, LOW);
+
+    Serial.println("Executing display");
+
     const unsigned long start = millis();
 
     Point newPoints[100];
     int newPointsIndex = 0;
 
-    for (int i = 8; i < len; i += 2) {
+    for (int i = 0; i < len; i += 2) {
         newPoints[newPointsIndex].x = params[i];
         newPoints[newPointsIndex++].y = params[i + 1];
     }
+
+    sprite.fillScreen(TFT_BLACK);
+
+    Serial.print("New point index: ");
+    Serial.println(newPointsIndex);
+
+    for (int i = 0; i < newPointsIndex - 1; i += 3) {
+        Serial.println("Drawing arc");
+
+        drawDirectBezier(
+            newPoints[i],
+            newPoints[i + 1],
+            newPoints[i + 2],
+            newPoints[i + 3],
+            MARCEL_BLUE
+        );
+    }
+
+    sprite.pushSprite(40, 40);
+
+    return;
 
     // TODO: Complete with missing points and rotate + shift
 
@@ -120,6 +178,9 @@ void process_command(String command) {
     float params[200];
     int len = 0;
 
+    Serial.println("processing command ");
+    Serial.println(command);
+    Serial.println(paramString);
 
     int startIndex = 0;
     int spaceIndex = paramString.indexOf(' ');
@@ -132,6 +193,15 @@ void process_command(String command) {
 
     if (startIndex < paramString.length()) {
         params[len++] = paramString.substring(startIndex).toFloat();
+    }
+
+    for (int i = 0; i < len; ++i) {
+        Serial.print("Param ");
+        Serial.print(i);
+
+        Serial.print(": ");
+
+        Serial.println(params[i]);
     }
 
     switch (cmd) {
@@ -151,7 +221,7 @@ void setup_uart() {
 
 void handle_uart() {
     while (Serial.available()) {
-        const u_int8_t c = Serial.read();
+        const char c = Serial.read();
 
         if (c == '\n') {
             process_command(buffer);

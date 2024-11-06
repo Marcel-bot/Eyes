@@ -11,9 +11,8 @@
 
 void setup_render();
 
-extern auto tft = TFT_eSPI();
-extern auto sprite = TFT_eSprite(&tft);
-extern auto eye = TFT_eSprite(&tft);
+extern TFT_eSPI tft;
+extern TFT_eSprite sprite;
 
 struct Point {
     float x, y;
